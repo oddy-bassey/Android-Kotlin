@@ -1,6 +1,7 @@
 package com.vaultcode
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -91,6 +92,15 @@ fun TopHeader(totalPerPerson: Double = 130.0) {
 @Preview
 @Composable
 fun MainContent() {
+    BillForm() {billAmount ->
+        Log.d("AMT", "MainContent: $billAmount")
+    }
+}
+
+@Composable
+fun BillForm(modifier: Modifier = Modifier,
+             onValueChange: (String) -> Unit = {}) {
+
     val totalBillState = remember {
         mutableStateOf("")
     }
@@ -98,6 +108,7 @@ fun MainContent() {
         totalBillState.value.trim().isNotEmpty()
     }
     val keyboardController = LocalSoftwareKeyboardController.current
+
     Surface(
         modifier = Modifier
             .padding(2.dp)
@@ -114,6 +125,7 @@ fun MainContent() {
                     if(!validState) return@KeyboardActions
 
                     // ToDo - onvaluechanged
+                    onValueChange(totalBillState.value.trim())
                     keyboardController?.hide()
                 }
             )
