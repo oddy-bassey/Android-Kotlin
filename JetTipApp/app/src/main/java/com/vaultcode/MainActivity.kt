@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyApp {
-                TopHeader()
+                MainContent()
             }
         }
     }
@@ -82,6 +82,7 @@ fun GreetingPreview() {
 fun TopHeader(totalPerPerson: Double = 130.0) {
     Surface(
         modifier = Modifier
+            .padding(10.dp)
             .fillMaxWidth()
             .height(150.dp)
             .clip(shape = CircleShape.copy(all = CornerSize(12.dp))),
@@ -101,15 +102,7 @@ fun TopHeader(totalPerPerson: Double = 130.0) {
     }
 }
 
-
 @Preview
-@Composable
-fun MainContent() {
-    BillForm() {billAmount ->
-        Log.d("AMT", "MainContent: $billAmount")
-    }
-}
-
 @Composable
 fun BillForm(modifier: Modifier = Modifier,
              onValueChange: (String) -> Unit = {}) {
@@ -136,7 +129,8 @@ fun BillForm(modifier: Modifier = Modifier,
         Column(modifier = Modifier.padding(6.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start) {
-            InputField(
+
+            InputField(modifier = Modifier.fillMaxWidth(),
                 valueState = totalBillState,
                 labelId = "Enter Bill",
                 enabled = true,
@@ -150,7 +144,9 @@ fun BillForm(modifier: Modifier = Modifier,
                 }
             )
             //if (validState) {
-                Row(modifier = Modifier.padding(3.dp),
+                Row(modifier = Modifier
+                    .padding(6.dp)
+                    .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Start) {
                     Text("Split",
                         modifier = Modifier.align(Alignment.CenterVertically))
@@ -174,7 +170,8 @@ fun BillForm(modifier: Modifier = Modifier,
                 }
             // Tip Row
             Row (modifier = Modifier
-                .padding(horizontal = 3.dp, vertical = 3.dp)){
+                .fillMaxWidth()
+                .padding(horizontal = 6.dp, vertical = 6.dp)){
                 Text(text = "Tip",
                 modifier = Modifier.align(Alignment.CenterVertically))
 
@@ -192,14 +189,27 @@ fun BillForm(modifier: Modifier = Modifier,
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Slider(value = sliderPositionState.value,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp),
                     onValueChange = {newValue ->
                         sliderPositionState.value = newValue
                         Log.d("Slider", "BillForm: $newValue")
-                    })
+                    },
+                    steps = 5)
             }
 //            } else {
 //                Box() {}
 //            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun MainContent() {
+    Column(modifier = Modifier.padding(all = 12.dp)) {
+        TopHeader()
+        BillForm() {billAmount ->
+            Log.d("AMT", "MainContent: $billAmount")
         }
     }
 }
