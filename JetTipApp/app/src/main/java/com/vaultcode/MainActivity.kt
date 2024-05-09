@@ -98,6 +98,7 @@ fun TopHeader(totalPerPerson: Double = 130.0) {
     }
 }
 
+
 @Preview
 @Composable
 fun MainContent() {
@@ -153,6 +154,10 @@ fun BillForm(modifier: Modifier = Modifier,
                         RoundIconButton(modifier = Modifier,
                             imageVector = Icons.Default.Remove,
                             onClick = { Log.d("Icon", "BillForm: Remove") })
+
+                        Text(text = "2",
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                                .padding(start = 9.dp, end = 9.dp ))
 
                         RoundIconButton(modifier = Modifier,
                             imageVector = Icons.Default.Add,
