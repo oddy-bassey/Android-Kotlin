@@ -28,6 +28,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -119,6 +120,10 @@ fun BillForm(modifier: Modifier = Modifier,
         mutableFloatStateOf(0f)
     }
 
+    val splitByState = remember {
+        mutableIntStateOf(1)
+    }
+
     Surface(
         modifier = Modifier
             .padding(2.dp)
@@ -153,19 +158,28 @@ fun BillForm(modifier: Modifier = Modifier,
                     Spacer(modifier = Modifier.width(120.dp))
                     Row(modifier = Modifier.padding(horizontal = 3.dp),
                         horizontalArrangement = Arrangement.End) {
+                        val range = IntRange(1, 100)
 
                         RoundIconButton(modifier = Modifier,
                             imageVector = Icons.Default.Remove,
-                            onClick = { Log.d("Icon", "BillForm: Remove") })
+                            onClick = {
+                                if(splitByState.intValue > 1) {
+                                    splitByState.value = splitByState.intValue - 1
+                                } else 1
+                            })
 
-                        Text(text = "2",
+                        Text(text = "${splitByState.intValue}",
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 9.dp, end = 9.dp))
 
                         RoundIconButton(modifier = Modifier,
                             imageVector = Icons.Default.Add,
-                            onClick = { Log.d("Icon", "BillForm: Add") })
+                            onClick = {
+                                if(splitByState.intValue < range.last) {
+                                    splitByState.value = splitByState.intValue + 1
+                                }
+                            })
                     }
                 }
             // Tip Row
