@@ -119,6 +119,7 @@ fun BillForm(modifier: Modifier = Modifier,
     val sliderPositionState = remember {
         mutableFloatStateOf(0f)
     }
+    val tipPercentage = (sliderPositionState.floatValue * 100).toInt()
 
     val splitByState = remember {
         mutableIntStateOf(1)
@@ -198,7 +199,7 @@ fun BillForm(modifier: Modifier = Modifier,
             Column(verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally) {
 
-                Text(text = "33%")
+                Text(text = "$tipPercentage %")
 
                 Spacer(modifier = Modifier.height(14.dp))
 
