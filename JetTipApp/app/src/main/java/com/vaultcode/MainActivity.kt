@@ -6,11 +6,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,6 +25,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,17 +33,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.SoftwareKeyboardController
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.isDigitsOnly
 import com.vaultcode.components.InputField
 import com.vaultcode.ui.theme.JetTipAppTheme
+import com.vaultcode.util.calculateTotalTip
 import com.vaultcode.widgets.RoundIconButton
 
 class MainActivity : ComponentActivity() {
@@ -112,7 +109,7 @@ fun BillForm(modifier: Modifier = Modifier,
         mutableStateOf("")
     }
     val validState = remember(totalBillState.value) {
-        totalBillState.value.trim().isNotEmpty()
+        totalBillState.value.trim().isNotEmpty() && totalBillState.value.isDigitsOnly()
     }
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -124,6 +121,12 @@ fun BillForm(modifier: Modifier = Modifier,
     val splitByState = remember {
         mutableIntStateOf(1)
     }
+
+    val tipAmountState  = remember {
+        mutableDoubleStateOf(0.0)
+    }
+
+    val range = IntRange(1, 100)
 
     Surface(
         modifier = Modifier
@@ -159,7 +162,6 @@ fun BillForm(modifier: Modifier = Modifier,
                     Spacer(modifier = Modifier.width(120.dp))
                     Row(modifier = Modifier.padding(horizontal = 3.dp),
                         horizontalArrangement = Arrangement.End) {
-                        val range = IntRange(1, 100)
 
                         RoundIconButton(modifier = Modifier,
                             imageVector = Icons.Default.Remove,
@@ -192,7 +194,7 @@ fun BillForm(modifier: Modifier = Modifier,
 
                 Spacer(modifier = Modifier.width(200.dp))
 
-                Text(text = "$33.00",
+                Text(text = "$ ${tipAmountState.value}",
                     modifier = Modifier.align(Alignment.CenterVertically))
             }
 
@@ -206,8 +208,11 @@ fun BillForm(modifier: Modifier = Modifier,
                 Slider(value = sliderPositionState.value,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp),
                     onValueChange = {newValue ->
-                        sliderPositionState.value = newValue
-                        Log.d("Slider", "BillForm: $newValue")
+                        if(validState) {
+                            sliderPositionState.value = newValue
+                            tipAmountState.value =
+                                calculateTotalTip(totalBillState.value.toDouble(), tipPercentage)
+                        }
                     },
                     steps = 5)
             }
