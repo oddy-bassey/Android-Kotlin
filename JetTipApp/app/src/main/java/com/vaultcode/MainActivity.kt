@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +26,8 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableDoubleState
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -41,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
 import com.vaultcode.components.InputField
 import com.vaultcode.ui.theme.JetTipAppTheme
+import com.vaultcode.util.calculateTotalPerson
 import com.vaultcode.util.calculateTotalTip
 import com.vaultcode.widgets.RoundIconButton
 
@@ -103,6 +107,7 @@ fun TopHeader(totalPerPerson: Double = 130.0) {
 @Preview
 @Composable
 fun BillForm(modifier: Modifier = Modifier,
+             totalPerPersonState: MutableDoubleState = mutableDoubleStateOf(0.0),
              onValueChange: (String) -> Unit = {}) {
 
     val totalBillState = remember {
@@ -152,7 +157,7 @@ fun BillForm(modifier: Modifier = Modifier,
                     keyboardController?.hide()
                 }
             )
-            //if (validState) {
+            if (validState) {
                 Row(modifier = Modifier
                     .padding(6.dp)
                     .fillMaxWidth(),
@@ -166,9 +171,9 @@ fun BillForm(modifier: Modifier = Modifier,
                         RoundIconButton(modifier = Modifier,
                             imageVector = Icons.Default.Remove,
                             onClick = {
-                                if(splitByState.intValue > 1) {
-                                    splitByState.value = splitByState.intValue - 1
-                                } else 1
+                                if(splitByState.intValue > 1) splitByState.value = splitByState.intValue - 1 else 1
+                                totalPerPersonState.doubleValue =
+                                    calculateTotalPerson(totalBillState.value.toDouble(), splitByState.intValue, tipPercentage)
                             })
 
                         Text(text = "${splitByState.intValue}",
@@ -179,46 +184,48 @@ fun BillForm(modifier: Modifier = Modifier,
                         RoundIconButton(modifier = Modifier,
                             imageVector = Icons.Default.Add,
                             onClick = {
-                                if(splitByState.intValue < range.last) {
-                                    splitByState.value = splitByState.intValue + 1
-                                }
+                                if(splitByState.intValue < range.last) splitByState.value = splitByState.intValue + 1
+                                totalPerPersonState.doubleValue =
+                                    calculateTotalPerson(totalBillState.value.toDouble(), splitByState.intValue, tipPercentage)
                             })
                     }
                 }
             // Tip Row
-            Row (modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 6.dp, vertical = 6.dp)){
-                Text(text = "Tip",
-                modifier = Modifier.align(Alignment.CenterVertically))
-
-                Spacer(modifier = Modifier.width(200.dp))
-
-                Text(text = "$ ${tipAmountState.value}",
+                Row (modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp, vertical = 6.dp)){
+                    Text(text = "Tip",
                     modifier = Modifier.align(Alignment.CenterVertically))
+
+                    Spacer(modifier = Modifier.width(200.dp))
+
+                    Text(text = "$ ${tipAmountState.value}",
+                        modifier = Modifier.align(Alignment.CenterVertically))
+                }
+
+                Column(verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+
+                    Text(text = "$tipPercentage %")
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Slider(value = sliderPositionState.floatValue,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+                        onValueChange = {newValue ->
+                            if(validState) {
+                                sliderPositionState.floatValue = newValue
+                                tipAmountState.doubleValue =
+                                    calculateTotalTip(totalBillState.value.toDouble(), tipPercentage)
+                                totalPerPersonState.doubleValue =
+                                    calculateTotalPerson(totalBillState.value.toDouble(), splitByState.intValue, tipPercentage)
+                            }
+                        },
+                        steps = 5)
+                }
+            } else {
+                Box() {}
             }
-
-            Column(verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally) {
-
-                Text(text = "$tipPercentage %")
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Slider(value = sliderPositionState.value,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp),
-                    onValueChange = {newValue ->
-                        if(validState) {
-                            sliderPositionState.value = newValue
-                            tipAmountState.value =
-                                calculateTotalTip(totalBillState.value.toDouble(), tipPercentage)
-                        }
-                    },
-                    steps = 5)
-            }
-//            } else {
-//                Box() {}
-//            }
         }
     }
 }
@@ -227,8 +234,13 @@ fun BillForm(modifier: Modifier = Modifier,
 @Composable
 fun MainContent() {
     Column(modifier = Modifier.padding(all = 12.dp)) {
-        TopHeader()
-        BillForm() {billAmount ->
+
+        val totalPerPersonState = remember {
+            mutableDoubleStateOf(0.0)
+        }
+
+        TopHeader(totalPerPerson = totalPerPersonState.value)
+        BillForm(totalPerPersonState = totalPerPersonState) {billAmount ->
             Log.d("AMT", "MainContent: $billAmount")
         }
     }
